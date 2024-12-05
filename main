@@ -1,0 +1,8 @@
+#include "TubesStrukDat.h"
+int main()
+{
+    Graph G;
+    initGraph_103022300060(G);
+    buildGraph_103022300060(G);
+    return 0;
+}
