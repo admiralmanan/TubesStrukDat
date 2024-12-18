@@ -1,55 +1,48 @@
 #include "TubesStrukDat.h"
-void createVertex(char newVertexID, adrVertex &v) {
-    v = new Vertex;
-    idVertex(v) = newVertexID;
-    nextVertex(v) = nullptr;
-    firstEdge(v) = nullptr;
-}
+#ifndef TubesStrukDat_h
+#define TubesStrukDat_h
 
-void addVertex(Graph &G, char newVertexID) {
-    adrVertex newVertex;
-    createVertex_103022300060(newVertexID, newVertex);
+#define idVertex(v) v->idVertex
+#define nextVertex(v) v->nextVertex
+#define firstEdge(v) v->firstEdge
+#define firstVertex(L) L.firstVertex
+#include <climits>
+#include <iostream>
+using namespace std;
 
-    if (firstVertex(G) == nullptr) {
-        firstVertex(G) = newVertex;
-    } else {
-        adrVertex temp = firstVertex(G);
-        while (nextVertex(temp) != nullptr) {
-            temp = nextVertex(temp);
-        }
-        nextVertex(temp) = newVertex;
-    }
-}
+// Definisi tipe data
+struct Edge;
+struct Vertex;
 
-void initGraph(Graph &G) {
-    firstVertex(G) = nullptr;
-}
+typedef Vertex* adrVertex;
+typedef Edge* adrEdge;
 
-void buildGraph(Graph &G) {
-    char vertexID;
-    cout << "Masukkan ID simpul (A-Z, berhenti dengan karakter non-huruf): ";
-    while (cin >> vertexID && isalpha(vertexID)) {
-        addVertex_103022300060(G, vertexID);
-        cout << "Simpul " << vertexID << " telah ditambahkan.\n";
-    }
-}
-  void inDegree(..){
-    
-  }
-  void outDegree(...){
-  
-  }
-  //tambah fungsi buat gedung teramai dikunjungi 
-  gedungTeramai(..){
-    
-  }
-  hargaTermurah(..){
-    
-  }
-  ruteAlternatif(...){
-    
-  }
-  ruteTercepat(...){
-    
-  }
-}
+struct Vertex {
+    char idVertex;
+    adrVertex nextVertex;
+    adrEdge firstEdge;
+};
+
+struct Edge {
+    char destVertexID;
+    int weight;
+    adrEdge nextEdge;
+};
+
+struct Graph {
+    adrVertex firstVertex;
+};
+
+// Deklarasi fungsi dan prosedur
+void createVertex(char newVertexID, adrVertex &v);
+void initGraph(Graph &G);
+void addVertex(Graph &G, char newVertexID);
+adrVertex findVertex(Graph G, char id);
+void addEdge(Graph &G, char fromID, char toID, int weight);
+void removeEdge(Graph &G, char fromID, char toID);
+void printGraph(Graph G);
+void tampilkanMenu(Graph &G);
+void DFS(Graph G, char startVertexID, char endVertexID);
+
+#endif /* tGraph_h */
+
