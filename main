@@ -2,7 +2,34 @@
 int main()
 {
     Graph G;
-    initGraph_103022300060(G);
-    buildGraph_103022300060(G);
+    initGraph(G);
+    
+    addVertex(G, 'A');
+    addVertex(G, 'B');
+    addVertex(G, 'C');
+    addVertex(G, 'D');
+    addVertex(G, 'E');
+    addVertex(G, 'F');
+    addVertex(G, 'G');
+    addVertex(G, 'H');
+    addVertex(G, 'I');
+    addVertex(G, 'J');
+
+    // Tambahkan edge
+    addEdge(G, 'A', 'B', 1);
+    addEdge(G, 'B', 'C', 1);
+    addEdge(G, 'C', 'D', 1);
+    addEdge(G, 'D', 'E', 5);
+    addEdge(G, 'D', 'F', 3);
+    addEdge(G, 'E', 'F', 3);
+    addEdge(G, 'F', 'G', 5);
+    addEdge(G, 'F', 'H', 4);
+    addEdge(G, 'G', 'H', 3);
+    addEdge(G, 'G', 'J', 4);
+    addEdge(G, 'H', 'I', 3);
+    addEdge(G, 'I', 'J', 3);
+    tampilkanMenu(G);
+    
+
     return 0;
 }
