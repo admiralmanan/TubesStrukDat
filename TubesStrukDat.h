@@ -5,39 +5,42 @@
 #define nextVertex(v) v->nextVertex
 #define firstEdge(v) v->firstEdge
 #define firstVertex(L) L.firstVertex
+#include <climits>
 #include <iostream>
 using namespace std;
 
+// Definisi tipe data
+struct Edge;
+struct Vertex;
 
-typedef struct Vertex *adrVertex;
-typedef struct Edge *adrEdge;
+typedef Vertex* adrVertex;
+typedef Edge* adrEdge;
 
-struct Edge
-{
-    char destVertexID;
-    int weight;
-    adrEdge nextEdge;
-};
-
-struct Vertex
-{
+struct Vertex {
     char idVertex;
     adrVertex nextVertex;
     adrEdge firstEdge;
 };
 
-struct Graph
-{
+struct Edge {
+    char destVertexID;
+    int weight;
+    adrEdge nextEdge;
+};
+
+struct Graph {
     adrVertex firstVertex;
 };
 
-
-void createVertex_103022300060(char newVertexID, adrVertex &v);
-void addVertex_103022300060(Graph &G, char newVertexID);
-void initGraph_103022300060(Graph &G);
-void buildGraph_103022300060(Graph &G);
-
-
-
+// Deklarasi fungsi dan prosedur
+void createVertex(char newVertexID, adrVertex &v);
+void initGraph(Graph &G);
+void addVertex(Graph &G, char newVertexID);
+adrVertex findVertex(Graph G, char id);
+void addEdge(Graph &G, char fromID, char toID, int weight);
+void removeEdge(Graph &G, char fromID, char toID);
+void printGraph(Graph G);
+void tampilkanMenu(Graph &G);
+void DFS(Graph G, char startVertexID, char endVertexID);
 
 #endif // TUBESSTRUKDAT_H_INCLUDED
