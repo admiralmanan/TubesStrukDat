@@ -5,44 +5,39 @@
 #define nextVertex(v) v->nextVertex
 #define firstEdge(v) v->firstEdge
 #define firstVertex(L) L.firstVertex
-#include <climits>
+
 #include <iostream>
 using namespace std;
 
-// Definisi tipe data
-struct Edge;
-struct Vertex;
-
-typedef Vertex* adrVertex;
-typedef Edge* adrEdge;
-
-struct Vertex {
-    char idVertex;
-    adrVertex nextVertex;
-    adrEdge firstEdge;
-};
-
+// Struktur data untuk Edge dan Vertex
 struct Edge {
     char destVertexID;
     int weight;
-    adrEdge nextEdge;
+    Edge* nextEdge;
+};
+
+struct Vertex {
+    char idVertex;
+    Vertex* nextVertex;
+    Edge* firstEdge;
 };
 
 struct Graph {
-    adrVertex firstVertex;
+    Vertex* firstVertex;
 };
 
-// Deklarasi fungsi dan prosedur
-void createVertex(char newVertexID, adrVertex &v);
+// Deklarasi fungsi-fungsi
+void createVertex(char newVertexID, Vertex* &v);
 void initGraph(Graph &G);
 void addVertex(Graph &G, char newVertexID);
-adrVertex findVertex(Graph G, char id);
+Vertex* findVertex(Graph G, char id);
 void addEdge(Graph &G, char fromID, char toID, int weight);
 void removeEdge(Graph &G, char fromID, char toID);
 void printGraph(Graph G);
-void tampilkanMenu(Graph &G);
-void DFS(Graph G, char startVertexID, char endVertexID);
 int totalHarga(Graph G, char startVertexID, char endVertexID);
+void DFSRec(Vertex* current, char endVertexID, int currentWeight, int &maxWeight, bool visited[], Graph G);
+void DFS(Graph G, char startVertexID, char endVertexID);
 void DFSTerjauh(Graph G, char startVertexID, char endVertexID);
+void tampilkanMenu(Graph &G);
 
 #endif // TUBESSTRUKDAT_H_INCLUDED
