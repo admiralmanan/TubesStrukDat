@@ -1,24 +1,27 @@
 #include "TubesStrukDat.h"
 
-void createVertex(char newVertexID, adrVertex &v) {
+// Fungsi untuk membuat vertex baru
+void createVertex(char newVertexID, Vertex* &v) {
     v = new Vertex;
     idVertex(v) = newVertexID;
     nextVertex(v) = nullptr;
     firstEdge(v) = nullptr;
 }
 
+// Inisialisasi graph (kosong)
 void initGraph(Graph &G) {
     firstVertex(G) = nullptr;
 }
 
+// Menambahkan vertex baru ke dalam graph
 void addVertex(Graph &G, char newVertexID) {
-    adrVertex newVertex;
+    Vertex* newVertex;
     createVertex(newVertexID, newVertex);
 
     if (firstVertex(G) == nullptr) {
         firstVertex(G) = newVertex;
     } else {
-        adrVertex temp = firstVertex(G);
+        Vertex* temp = firstVertex(G);
         while (nextVertex(temp) != nullptr) {
             temp = nextVertex(temp);
         }
@@ -26,8 +29,9 @@ void addVertex(Graph &G, char newVertexID) {
     }
 }
 
-adrVertex findVertex(Graph G, char id) {
-    adrVertex temp = firstVertex(G);
+// Mencari vertex berdasarkan ID
+Vertex* findVertex(Graph G, char id) {
+    Vertex* temp = firstVertex(G);
     while (temp != nullptr) {
         if (idVertex(temp) == id) {
             return temp;
@@ -37,18 +41,19 @@ adrVertex findVertex(Graph G, char id) {
     return nullptr;
 }
 
+// Menambahkan edge antara dua vertex
 void addEdge(Graph &G, char fromID, char toID, int weight) {
-    adrVertex fromVertex = findVertex(G, fromID);
-    adrVertex toVertex = findVertex(G, toID);
+    Vertex* fromVertex = findVertex(G, fromID);
+    Vertex* toVertex = findVertex(G, toID);
 
     if (fromVertex != nullptr && toVertex != nullptr) {
-        adrEdge newEdge = new Edge;
+        Edge* newEdge = new Edge;
         newEdge->destVertexID = toID;
         newEdge->weight = weight;
         newEdge->nextEdge = firstEdge(fromVertex);
         firstEdge(fromVertex) = newEdge;
 
-        adrEdge reverseEdge = new Edge;
+        Edge* reverseEdge = new Edge;
         reverseEdge->destVertexID = fromID;
         reverseEdge->weight = weight;
         reverseEdge->nextEdge = firstEdge(toVertex);
@@ -58,13 +63,14 @@ void addEdge(Graph &G, char fromID, char toID, int weight) {
     }
 }
 
+// Menghapus edge antara dua vertex
 void removeEdge(Graph &G, char fromID, char toID) {
-    adrVertex fromVertex = findVertex(G, fromID);
-    adrVertex toVertex = findVertex(G, toID);
+    Vertex* fromVertex = findVertex(G, fromID);
+    Vertex* toVertex = findVertex(G, toID);
 
     if (fromVertex != nullptr && toVertex != nullptr) {
-        // Hapus edge dari fromID ke toID
-        adrEdge prev = nullptr, current = firstEdge(fromVertex);
+        // Menghapus edge dari fromID ke toID
+        Edge* prev = nullptr, *current = firstEdge(fromVertex);
         while (current != nullptr && current->destVertexID != toID) {
             prev = current;
             current = current->nextEdge;
@@ -78,7 +84,7 @@ void removeEdge(Graph &G, char fromID, char toID) {
             delete current;
         }
 
-        // Hapus edge dari toID ke fromID
+        // Menghapus edge dari toID ke fromID
         prev = nullptr, current = firstEdge(toVertex);
         while (current != nullptr && current->destVertexID != fromID) {
             prev = current;
@@ -99,11 +105,12 @@ void removeEdge(Graph &G, char fromID, char toID) {
     }
 }
 
+// Menampilkan isi graph
 void printGraph(Graph G) {
-    adrVertex v = firstVertex(G);
+    Vertex* v = firstVertex(G);
     while (v != nullptr) {
         cout << "Vertex " << idVertex(v) << ": ";
-        adrEdge e = firstEdge(v);
+        Edge* e = firstEdge(v);
         while (e != nullptr) {
             cout << "-> " << e->destVertexID << "(" << e->weight << ") ";
             e = e->nextEdge;
@@ -113,146 +120,15 @@ void printGraph(Graph G) {
     }
 }
 
-void DFSUtil(adrVertex currentVertex, char endVertexID, unordered_map<char, bool> &visited,
-             vector<char> &currentPath, vector<char> &shortestPath, int currentWeight,
-             int &minWeight, Graph G) {
-    // Tandai vertex ini sebagai dikunjungi
-    visited[idVertex(currentVertex)] = true;
-    currentPath.push_back(idVertex(currentVertex));
-
-    // Jika mencapai tujuan, periksa apakah jalur ini lebih pendek
-    if (idVertex(currentVertex) == endVertexID) {
-        if (currentWeight < minWeight) {
-            minWeight = currentWeight;
-            shortestPath = currentPath; // Perbarui jalur terpendek
-        }
-    } else {
-        // Telusuri semua tetangga
-        adrEdge edge = firstEdge(currentVertex);
-        while (edge != nullptr) {
-            char nextVertexID = edge->destVertexID;
-            if (!visited[nextVertexID]) {
-                DFSUtil(findVertex(G, nextVertexID), endVertexID, visited, currentPath, shortestPath,
-                        currentWeight + edge->weight, minWeight, G);
-            }
-            edge = edge->nextEdge;
-        }
-    }
-
-    // Backtracking
-    visited[idVertex(currentVertex)] = false;
-    currentPath.pop_back();
-}
-
-void DFS(Graph G, char startVertexID, char endVertexID) {
-    adrVertex startVertex = findVertex(G, startVertexID);
-    adrVertex endVertex = findVertex(G, endVertexID);
-
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Salah satu atau kedua vertex tidak ditemukan." << endl;
-        return;
-    }
-
-    // Variabel untuk DFS
-    unordered_map<char, bool> visited;
-    vector<char> currentPath;
-    vector<char> shortestPath;
-    int minWeight = INT_MAX;
-
-    // Inisialisasi visited
-    for (adrVertex v = firstVertex(G); v != nullptr; v = nextVertex(v)) {
-        visited[idVertex(v)] = false;
-    }
-
-    // Mulai DFS
-    DFSUtil(startVertex, endVertexID, visited, currentPath, shortestPath, 0, minWeight, G);
-
-    // Tampilkan hasil
-    if (!shortestPath.empty()) {
-        cout << "Jalur tercepaT: ";
-        for (char vertex : shortestPath) {
-            cout << vertex << " ";
-        }
-        cout << "\nTotal bobot: " << minWeight << endl;
-    } else {
-        cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
-    }
-}
-
-void DFSLongestUtil(adrVertex currentVertex, char endVertexID, unordered_map<char, bool> &visited,
-                    vector<char> &currentPath, vector<char> &longestPath, int currentWeight,
-                    int &maxWeight, Graph G) {
-    // Tandai vertex sebagai dikunjungi
-    visited[idVertex(currentVertex)] = true;
-    currentPath.push_back(idVertex(currentVertex));
-
-    // Jika mencapai tujuan, periksa apakah jalur ini memiliki bobot terbesar
-    if (idVertex(currentVertex) == endVertexID) {
-        if (currentWeight > maxWeight) {
-            maxWeight = currentWeight;
-            longestPath = currentPath; // Perbarui jalur terlama
-        }
-    } else {
-        // Telusuri semua tetangga
-        adrEdge edge = firstEdge(currentVertex);
-        while (edge != nullptr) {
-            char nextVertexID = edge->destVertexID;
-            if (!visited[nextVertexID]) {
-                DFSLongestUtil(findVertex(G, nextVertexID), endVertexID, visited, currentPath, longestPath,
-                               currentWeight + edge->weight, maxWeight, G);
-            }
-            edge = edge->nextEdge;
-        }
-    }
-
-    // Backtracking
-    visited[idVertex(currentVertex)] = false;
-    currentPath.pop_back();
-}
-
-void DFSLongest(Graph G, char startVertexID, char endVertexID) {
-    adrVertex startVertex = findVertex(G, startVertexID);
-    adrVertex endVertex = findVertex(G, endVertexID);
-
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Salah satu atau kedua vertex tidak ditemukan." << endl;
-        return;
-    }
-
-    // Variabel untuk DFS
-    unordered_map<char, bool> visited;
-    vector<char> currentPath;
-    vector<char> longestPath;
-    int maxWeight = INT_MIN;
-
-    // Inisialisasi visited
-    for (adrVertex v = firstVertex(G); v != nullptr; v = nextVertex(v)) {
-        visited[idVertex(v)] = false;
-    }
-
-    // Mulai DFSLongest
-    DFSLongestUtil(startVertex, endVertexID, visited, currentPath, longestPath, 0, maxWeight, G);
-
-    // Tampilkan hasil
-    if (!longestPath.empty()) {
-        cout << "Rute Terlama: ";
-        for (char vertex : longestPath) {
-            cout << vertex << " ";
-        }
-        cout << "\nTotal bobot: " << maxWeight << endl;
-    } else {
-        cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
-    }
-}
-
+// Menghitung total harga berdasarkan edge yang ada
 int totalHarga(Graph G, char startVertexID, char endVertexID) {
-    adrVertex startVertex = findVertex(G, startVertexID);
+    Vertex* startVertex = findVertex(G, startVertexID);
     if (startVertex == nullptr) {
         cout << "Vertex awal tidak ditemukan: " << startVertexID << endl;
         return -1;
     }
 
-    adrEdge edge = firstEdge(startVertex);
+    Edge* edge = firstEdge(startVertex);
     while (edge != nullptr) {
         if (edge->destVertexID == endVertexID) {
             return edge->weight * 2000; // Bobot dikalikan harga per menit
@@ -263,43 +139,58 @@ int totalHarga(Graph G, char startVertexID, char endVertexID) {
     cout << "Edge dari " << startVertexID << " ke " << endVertexID << " tidak ditemukan.\n";
     return -1;
 }
-void DFSTerjauh(Graph G, char startVertexID, char endVertexID) {
-    adrVertex startVertex = findVertex(G, startVertexID);
-    adrVertex endVertex = findVertex(G, endVertexID);
 
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Salah satu atau kedua vertex tidak ditemukan.\n";
+// Fungsi rekursif DFS untuk mencari jalur terpanjang
+void DFSRec(Vertex* current, char endVertexID, int currentWeight, int &maxWeight, bool visited[], Graph G) {
+    // Jika mencapai tujuan, perbarui maxWeight jika perlu
+    if (idVertex(current) == endVertexID) {
+        maxWeight = max(maxWeight, currentWeight);
         return;
     }
 
-    // Variabel untuk DFS
-    unordered_map<char, bool> visited;
-    vector<char> currentPath;
-    vector<char> longestPath;
-    int maxWeight = INT_MIN;
+    visited[current->idVertex - 'A'] = true;
 
-    // Inisialisasi visited
-    for (adrVertex v = firstVertex(G); v != nullptr; v = nextVertex(v)) {
-        visited[idVertex(v)] = false;
+    Edge* edge = firstEdge(current);
+    while (edge != nullptr) {
+        Vertex* nextVertex = findVertex(G, edge->destVertexID);
+        if (nextVertex != nullptr && !visited[nextVertex->idVertex - 'A']) {
+            DFSRec(nextVertex, endVertexID, currentWeight + edge->weight, maxWeight, visited, G);
+        }
+        edge = edge->nextEdge;
     }
 
-    // Mulai pencarian jalur terjauh
-    DFSLongestUtil(startVertex, endVertexID, visited, currentPath, longestPath, 0, maxWeight, G);
+    visited[current->idVertex - 'A'] = false; // Membatalkan penandaan vertex sebagai sudah dikunjungi
+}
 
-    // Tampilkan hasil
-    if (!longestPath.empty()) {
-        cout << "Rute Terjauh: ";
-        for (char vertex : longestPath) {
-            cout << vertex << " ";
-        }
-        cout << "\nTotal bobot (menit): " << maxWeight << endl;
+// Fungsi DFS untuk mencari jalur terpanjang
+void DFS(Graph G, char startVertexID, char endVertexID) {
+    Vertex* startVertex = findVertex(G, startVertexID);
+    Vertex* endVertex = findVertex(G, endVertexID);
+
+    if (startVertex == nullptr || endVertex == nullptr) {
+        cout << "Vertex tidak ditemukan!" << endl;
+        return;
+    }
+
+    // Inisialisasi array visited dan variabel maxWeight
+    bool visited[26] = {false};  // Mengasumsikan hanya menggunakan huruf besar A-Z
+    int maxWeight = -1;
+
+    DFSRec(startVertex, endVertexID, 0, maxWeight, visited, G);
+
+    if (maxWeight == -1) {
+        cout << "Tidak ada jalur ditemukan antara " << startVertexID << " dan " << endVertexID << endl;
     } else {
-        cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
+        cout << "Jalur terpanjang dari " << startVertexID << " ke " << endVertexID << " memiliki bobot: " << maxWeight << endl;
     }
 }
 
+// Fungsi untuk mencari jalur terjauh (menggunakan DFS)
+void DFSTerjauh(Graph G, char startVertexID, char endVertexID) {
+    DFS(G, startVertexID, endVertexID);  // Implementasi DFS bisa digunakan untuk DFSTerjauh
+}
 
-
+// Fungsi untuk menampilkan menu dan memilih aksi yang akan dilakukan
 void tampilkanMenu(Graph &G) {
     char startVertex, endVertex;
     bool jalan = true;
@@ -331,44 +222,28 @@ void tampilkanMenu(Graph &G) {
 
             case 3:
                 DFS(G, startVertex, endVertex);
-                DFSLongest(G, startVertex, endVertex);
+                DFSTerjauh(G, startVertex, endVertex);
                 break;
 
-            case 4: {
-                int menit;
-                cout << "Masukkan waktu perjalanan (menit): ";
-                cin >> menit;
-                int harga = totalHarga(G, startVertex, endVertex, menit);
-                if (harga != -1) {
-                    cout << "Total harga perjalanan: " << harga << endl;
-                }
+            case 4:
+                cout << "Total harga: " << totalHarga(G, startVertex, endVertex) << endl;
                 break;
-            }
 
-            case 5: {
-                char fromID, toID;
-                cout << "Masukkan titik awal jalur yang akan dihapus: ";
-                cin >> fromID;
-                cout << "Masukkan titik tujuan jalur yang akan dihapus: ";
-                cin >> toID;
-                removeEdge(G, fromID, toID);
+            case 5:
+                removeEdge(G, startVertex, endVertex);
                 break;
-            }
 
             case 6:
                 DFSTerjauh(G, startVertex, endVertex);
                 break;
 
             case 7:
-                cout << "Keluar dari program. Terima kasih!\n";
                 jalan = false;
                 break;
 
             default:
-                cout << "Pilihan tidak valid. Coba lagi.\n";
+                cout << "Pilihan tidak valid!" << endl;
                 break;
         }
-
-        cout << endl;
     }
 }
