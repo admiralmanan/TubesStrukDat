@@ -42,5 +42,7 @@ void removeEdge(Graph &G, char fromID, char toID);
 void printGraph(Graph G);
 void tampilkanMenu(Graph &G);
 void DFS(Graph G, char startVertexID, char endVertexID);
+int totalHarga(Graph G, char startVertexID, char endVertexID);
+void DFSTerjauh(Graph G, char startVertexID, char endVertexID);
 
 #endif // TUBESSTRUKDAT_H_INCLUDED
