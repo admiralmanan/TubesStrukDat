@@ -245,6 +245,61 @@ void DFSLongest(Graph G, char startVertexID, char endVertexID) {
     }
 }
 
+int totalHarga(Graph G, char startVertexID, char endVertexID) {
+    adrVertex startVertex = findVertex(G, startVertexID);
+    if (startVertex == nullptr) {
+        cout << "Vertex awal tidak ditemukan: " << startVertexID << endl;
+        return -1;
+    }
+
+    adrEdge edge = firstEdge(startVertex);
+    while (edge != nullptr) {
+        if (edge->destVertexID == endVertexID) {
+            return edge->weight * 2000; // Bobot dikalikan harga per menit
+        }
+        edge = edge->nextEdge;
+    }
+
+    cout << "Edge dari " << startVertexID << " ke " << endVertexID << " tidak ditemukan.\n";
+    return -1;
+}
+void DFSTerjauh(Graph G, char startVertexID, char endVertexID) {
+    adrVertex startVertex = findVertex(G, startVertexID);
+    adrVertex endVertex = findVertex(G, endVertexID);
+
+    if (startVertex == nullptr || endVertex == nullptr) {
+        cout << "Salah satu atau kedua vertex tidak ditemukan.\n";
+        return;
+    }
+
+    // Variabel untuk DFS
+    unordered_map<char, bool> visited;
+    vector<char> currentPath;
+    vector<char> longestPath;
+    int maxWeight = INT_MIN;
+
+    // Inisialisasi visited
+    for (adrVertex v = firstVertex(G); v != nullptr; v = nextVertex(v)) {
+        visited[idVertex(v)] = false;
+    }
+
+    // Mulai pencarian jalur terjauh
+    DFSLongestUtil(startVertex, endVertexID, visited, currentPath, longestPath, 0, maxWeight, G);
+
+    // Tampilkan hasil
+    if (!longestPath.empty()) {
+        cout << "Rute Terjauh: ";
+        for (char vertex : longestPath) {
+            cout << vertex << " ";
+        }
+        cout << "\nTotal bobot (menit): " << maxWeight << endl;
+    } else {
+        cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
+    }
+}
+
+
+
 void tampilkanMenu(Graph &G) {
     char startVertex, endVertex;
     bool jalan = true;
@@ -253,9 +308,10 @@ void tampilkanMenu(Graph &G) {
         cout << "1. Lihat Map" << endl;
         cout << "2. Masukkan Titik Awal dan Tujuan" << endl;
         cout << "3. Tampilkan Rute Tercepat dan Terlama" << endl;
+        cout << "4. Hitung Total Harga" << endl;
         cout << "5. Hapus Jalur" << endl;
-        cout << "6. Rute Alternatif" << endl;
-        cout << "6. Keluar" << endl;
+        cout << "6. Rute Terjauh" << endl;
+        cout << "7. Keluar" << endl;
         cout << "Masukkan menu: ";
 
         int pilihan;
@@ -278,7 +334,18 @@ void tampilkanMenu(Graph &G) {
                 DFSLongest(G, startVertex, endVertex);
                 break;
 
-            case 5:
+            case 4: {
+                int menit;
+                cout << "Masukkan waktu perjalanan (menit): ";
+                cin >> menit;
+                int harga = totalHarga(G, startVertex, endVertex, menit);
+                if (harga != -1) {
+                    cout << "Total harga perjalanan: " << harga << endl;
+                }
+                break;
+            }
+
+            case 5: {
                 char fromID, toID;
                 cout << "Masukkan titik awal jalur yang akan dihapus: ";
                 cin >> fromID;
@@ -286,8 +353,13 @@ void tampilkanMenu(Graph &G) {
                 cin >> toID;
                 removeEdge(G, fromID, toID);
                 break;
+            }
 
             case 6:
+                DFSTerjauh(G, startVertex, endVertex);
+                break;
+
+            case 7:
                 cout << "Keluar dari program. Terima kasih!\n";
                 jalan = false;
                 break;
