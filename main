@@ -1,35 +1,35 @@
-#include "TubesStrukDat.h"
-int main()
-{
+#include "tGraph.h"
+#include <iostream>
+using namespace std;
+
+int main() {
     Graph G;
     initGraph(G);
-    
-    addVertex(G, 'A');
-    addVertex(G, 'B');
-    addVertex(G, 'C');
-    addVertex(G, 'D');
-    addVertex(G, 'E');
-    addVertex(G, 'F');
-    addVertex(G, 'G');
-    addVertex(G, 'H');
-    addVertex(G, 'I');
-    addVertex(G, 'J');
 
-    // Tambahkan edge
-    addEdge(G, 'A', 'B', 1);
-    addEdge(G, 'B', 'C', 1);
-    addEdge(G, 'C', 'D', 1);
-    addEdge(G, 'D', 'E', 5);
-    addEdge(G, 'D', 'F', 3);
-    addEdge(G, 'E', 'F', 3);
-    addEdge(G, 'F', 'G', 5);
-    addEdge(G, 'F', 'H', 4);
-    addEdge(G, 'G', 'H', 3);
-    addEdge(G, 'G', 'J', 4);
-    addEdge(G, 'H', 'I', 3);
-    addEdge(G, 'I', 'J', 3);
+    addVertex(G, "Gedung_A");
+    addVertex(G, "Gedung_B");
+    addVertex(G, "Gedung_C");
+    addVertex(G, "Gedung_D");
+    addVertex(G, "Gedung_E");
+    addVertex(G, "Gedung_F");
+    addVertex(G, "Gedung_G");
+    addVertex(G, "Gedung_H");
+    addVertex(G, "Gedung_I");
+    addVertex(G, "Gedung_J");
+
+    addEdge(G, "Gedung_A", "Gedung_B", 1);
+    addEdge(G, "Gedung_B", "Gedung_C", 1);
+    addEdge(G, "Gedung_C", "Gedung_D", 1);
+    addEdge(G, "Gedung_D", "Gedung_E", 5);
+    addEdge(G, "Gedung_D", "Gedung_F", 3);
+    addEdge(G, "Gedung_E", "Gedung_F", 3);
+    addEdge(G, "Gedung_F", "Gedung_G", 5);
+    addEdge(G, "Gedung_F", "Gedung_H", 4);
+    addEdge(G, "Gedung_G", "Gedung_H", 3);
+    addEdge(G, "Gedung_G", "Gedung_J", 4);
+    addEdge(G, "Gedung_H", "Gedung_I", 3);
+    addEdge(G, "Gedung_I", "Gedung_J", 3);
+
     tampilkanMenu(G);
-    
-
     return 0;
 }
