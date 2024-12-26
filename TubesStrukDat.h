@@ -34,8 +34,6 @@ struct Graph {
 };
 
 // Deklarasi fungsi dan prosedur
-void createVertex(string newVertexID, adrVertex &v);
-void initGraph(Graph &G);
 void addVertex(Graph &G, string newVertexID);
 adrVertex findVertex(Graph G, string id);
 void addEdge(Graph &G, string fromID, string toID, int weight);
@@ -45,5 +43,6 @@ void ruteTerecepat(Graph G, string startVertexID, string endVertexID);
 void tampilkanMenu(Graph &G);
 void tambahRute(Graph &G);
 void tujuan(Graph &G, string &startVertex, string &endVertex);
+int totalHarga(Graph G, string startVertexID, string endVertexID);
 
 #endif /* tGraph_h */
