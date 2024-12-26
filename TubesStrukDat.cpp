@@ -1,337 +1,518 @@
-#include "TubesStrukDat.h"
+#include "tGraph.h"
 
-// Fungsi untuk membuat vertex baru
-void createVertex(char newVertexID, Vertex* &v) {
-    v = new Vertex;
-    idVertex(v) = newVertexID;
-    nextVertex(v) = nullptr;
-    firstEdge(v) = nullptr;
-}
-
-// Inisialisasi graph (kosong)
 void initGraph(Graph &G) {
-    firstVertex(G) = nullptr;
+    G.firstVertex = nullptr;
 }
 
-// Menambahkan vertex baru ke dalam graph
-void addVertex(Graph &G, char newVertexID) {
-    Vertex* newVertex;
-    createVertex(newVertexID, newVertex);
+void addVertex(Graph &G, string newVertexID) {
+    adrVertex newVertex = new Vertex;
+    newVertex->idVertex = newVertexID;
+    newVertex->nextVertex = nullptr;
+    newVertex->firstEdge = nullptr;
 
-    if (firstVertex(G) == nullptr) {
-        firstVertex(G) = newVertex;
+    if (G.firstVertex == nullptr) {
+        G.firstVertex = newVertex;
     } else {
-        Vertex* temp = firstVertex(G);
-        while (nextVertex(temp) != nullptr) {
-            temp = nextVertex(temp);
+        adrVertex temp = G.firstVertex;
+        while (temp->nextVertex != nullptr) {
+            temp = temp->nextVertex;
         }
-        nextVertex(temp) = newVertex;
+        temp->nextVertex = newVertex;
     }
 }
 
-// Mencari vertex berdasarkan ID
-Vertex* findVertex(Graph G, char id) {
-    Vertex* temp = firstVertex(G);
+adrVertex findVertex(Graph G, string id) {
+    adrVertex temp = G.firstVertex;
     while (temp != nullptr) {
-        if (idVertex(temp) == id) {
+        if (temp->idVertex == id) {
             return temp;
         }
-        temp = nextVertex(temp);
+        temp = temp->nextVertex;
     }
     return nullptr;
 }
 
-// Menambahkan edge antara dua vertex
-void addEdge(Graph &G, char fromID, char toID, int weight) {
-    Vertex* fromVertex = findVertex(G, fromID);
-    Vertex* toVertex = findVertex(G, toID);
+void addEdge(Graph &G, string fromID, string toID, int weight) {
+    adrVertex fromVertex = findVertex(G, fromID);
+    adrVertex toVertex = findVertex(G, toID);
 
     if (fromVertex != nullptr && toVertex != nullptr) {
-        Edge* newEdge = new Edge;
+        
+        adrEdge newEdge = new Edge;
         newEdge->destVertexID = toID;
         newEdge->weight = weight;
-        newEdge->nextEdge = firstEdge(fromVertex);
-        firstEdge(fromVertex) = newEdge;
+        newEdge->nextEdge = fromVertex->firstEdge;
+        fromVertex->firstEdge = newEdge;
 
-        Edge* reverseEdge = new Edge;
+        adrEdge reverseEdge = new Edge;
         reverseEdge->destVertexID = fromID;
         reverseEdge->weight = weight;
-        reverseEdge->nextEdge = firstEdge(toVertex);
-        firstEdge(toVertex) = reverseEdge;
-    } else {
-        cout << "Vertex tidak ditemukan: " << fromID << " atau " << toID << endl;
+        reverseEdge->nextEdge = toVertex->firstEdge;
+        toVertex->firstEdge = reverseEdge;
     }
 }
 
-// Fungsi untuk menghapus edge antara dua vertex
-void removeEdge(Graph &G, char fromID, char toID) {
-    Vertex* fromVertex = findVertex(G, fromID);
-    Vertex* toVertex = findVertex(G, toID);
+void removeEdge(Graph &G, string fromVertexID, string toVertexID) {
+    adrVertex fromVertex = findVertex(G, fromVertexID);
+    adrVertex toVertex = findVertex(G, toVertexID);
 
-    if (fromVertex != nullptr && toVertex != nullptr) {
-        // Menghapus edge dari fromID ke toID
-        Edge* prev = nullptr, *current = firstEdge(fromVertex);
-        while (current != nullptr && current->destVertexID != toID) {
-            prev = current;
-            current = current->nextEdge;
-        }
-        if (current != nullptr) {
-            if (prev == nullptr) {
-                firstEdge(fromVertex) = current->nextEdge;
-            } else {
-                prev->nextEdge = current->nextEdge;
-            }
-            delete current;
-        }
-
-        // Menghapus edge dari toID ke fromID (karena ini adalah graph tak terarah)
-        prev = nullptr, current = firstEdge(toVertex);
-        while (current != nullptr && current->destVertexID != fromID) {
-            prev = current;
-            current = current->nextEdge;
-        }
-        if (current != nullptr) {
-            if (prev == nullptr) {
-                firstEdge(toVertex) = current->nextEdge;
-            } else {
-                prev->nextEdge = current->nextEdge;
-            }
-            delete current;
-        }
-
-        cout << "Jalur antara " << fromID << " dan " << toID << " telah dihapus.\n";
-    } else {
-        cout << "Vertex tidak ditemukan: " << fromID << " atau " << toID << endl;
+    if (fromVertex == nullptr || toVertex == nullptr) {
+        // Jika salah satu vertex tidak ditemukan, tampilkan pesan yang sesuai
+        cout << "Tidak ada rute dari Gedung " << fromVertexID << " ke Gedung " << toVertexID << endl;
+        return;  // Hentikan eksekusi fungsi
     }
+
+    // Cek apakah ada edge yang menghubungkan fromVertex ke toVertex
+    adrEdge edge = fromVertex->firstEdge;
+    bool foundEdge = false;  // Flag untuk mengecek apakah edge ditemukan
+    adrEdge prev = nullptr;
+
+    while (edge != nullptr) {
+        if (edge->destVertexID == toVertexID) {
+            foundEdge = true;  // Tandai bahwa edge ditemukan
+            if (prev == nullptr) {
+                fromVertex->firstEdge = edge->nextEdge;  // Hapus edge pertama
+            } else {
+                prev->nextEdge = edge->nextEdge;  // Hapus edge setelahnya
+            }
+            delete edge;
+            break;
+        }
+        prev = edge;
+        edge = edge->nextEdge;
+    }
+
+    // Jika tidak ada edge yang ditemukan, tampilkan pesan bahwa tidak ada rute
+    if (!foundEdge) {
+        cout << "Tidak ada rute dari Gedung " << fromVertexID << " ke Gedung " << toVertexID << endl;
+        return;  // Hentikan eksekusi fungsi
+    }
+
+    // Jika Anda ingin menghapus juga edge sebaliknya (untuk graf tidak berarah)
+    edge = toVertex->firstEdge;
+    prev = nullptr;
+    while (edge != nullptr) {
+        if (edge->destVertexID == fromVertexID) {
+            if (prev == nullptr) {
+                toVertex->firstEdge = edge->nextEdge;  // Hapus edge pertama
+            } else {
+                prev->nextEdge = edge->nextEdge;  // Hapus edge setelahnya
+            }
+            delete edge;
+            break;
+        }
+        prev = edge;
+        edge = edge->nextEdge;
+    }
+
+    cout << "Rute antara " << fromVertexID << " dan " << toVertexID << " telah dihapus." << endl;
 }
 
 
-// Menampilkan isi graph
+
+
 void printGraph(Graph G) {
-    Vertex* v = firstVertex(G);
-    while (v != nullptr) {
-        cout << "Vertex " << idVertex(v) << ": ";
-        Edge* e = firstEdge(v);
-        while (e != nullptr) {
-            cout << "-> " << e->destVertexID << "(" << e->weight << ") ";
-            e = e->nextEdge;
+    adrVertex temp = G.firstVertex;
+    while (temp != nullptr) {
+        cout << temp->idVertex << ": ";
+        
+        bool firstEdge = true;
+
+        adrEdge edge = temp->firstEdge;
+        while (edge != nullptr) {
+            // Cek apakah ini edge pertama yang akan dicetak, agar formatnya sesuai
+            if (!firstEdge) {
+                cout << ", ";
+            }
+            cout << edge->destVertexID << " | Waktu: " << edge->weight << " Menit";
+            firstEdge = false;
+            edge = edge->nextEdge;
         }
         cout << endl;
-        v = nextVertex(v);
+        temp = temp->nextVertex;
     }
 }
 
-// BFS untuk mencari jalur tercepat
-void bfs(Graph G, char startVertexID, char endVertexID) {
-    Vertex* startVertex = findVertex(G, startVertexID);
-    Vertex* endVertex = findVertex(G, endVertexID);
 
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Vertex tidak ditemukan!" << endl;
+void ruteTerecepat(Graph G, string startVertexID, string endVertexID) {
+    if (startVertexID == endVertexID) {
+        cout << "Tidak ada rute di gedung yang sama." << endl;
+        return; // Hentikan eksekusi fungsi jika titik awal dan tujuan sama
+    }
+
+    const int MAX_VERTEX = 100;
+    string vertices[MAX_VERTEX];
+    int distances[MAX_VERTEX];
+    string predecessors[MAX_VERTEX];
+    bool visited[MAX_VERTEX] = {false};
+    int vertexCount = 0;
+
+    // Menyusun daftar semua vertex dalam graph
+    adrVertex v = G.firstVertex;
+    while (v != nullptr) {
+        vertices[vertexCount] = v->idVertex;
+        distances[vertexCount] = -1; // Inisialisasi jarak
+        predecessors[vertexCount] = "";
+        vertexCount++;
+        v = v->nextVertex;
+    }
+
+    // Temukan indeks dari startVertexID
+    int startIndex = -1;
+    for (int i = 0; i < vertexCount; i++) {
+        if (vertices[i] == startVertexID) {
+            startIndex = i;
+            break;
+        }
+    }
+
+    // Jika titik awal tidak ditemukan, beri pesan error
+    if (startIndex == -1) {
+        cout << "Titik awal tidak ditemukan!" << endl;
         return;
     }
 
-    bool visited[26] = {false};  // Mengasumsikan hanya menggunakan huruf besar A-Z
-    int distance[26];  // Menyimpan jarak dari start
-    char previous[26];  // Menyimpan previous vertex untuk rekonstruksi jalur
+    // Set jarak awal dari startVertexID ke 0
+    distances[startIndex] = 0;
 
-    for (int i = 0; i < 26; ++i) {
-        distance[i] = -1;
-        previous[i] = '\0';
-    }
+    // Proses Dijkstra untuk mencari jarak terpendek
+    for (int count = 0; count < vertexCount; count++) {
+        int minIndex = -1;
+        for (int i = 0; i < vertexCount; i++) {
+            if (!visited[i] && distances[i] != -1 &&
+                (minIndex == -1 || distances[i] < distances[minIndex])) {
+                minIndex = i;
+            }
+        }
 
-    Vertex* queue[26];
-    int front = 0, rear = 0;
+        if (minIndex == -1) break; // Tidak ada jalur lagi
+        visited[minIndex] = true;
 
-    // Mulai BFS dari startVertex
-    distance[startVertexID - 'A'] = 0;
-    queue[rear++] = startVertex;
-
-    while (front != rear) {
-        Vertex* current = queue[front++];
-        Edge* edge = firstEdge(current);
-
+        adrVertex current = findVertex(G, vertices[minIndex]);
+        adrEdge edge = current->firstEdge;
         while (edge != nullptr) {
-            Vertex* nextVertex = findVertex(G, edge->destVertexID);
-
-            if (!visited[nextVertex->idVertex - 'A']) {
-                visited[nextVertex->idVertex - 'A'] = true;
-                distance[nextVertex->idVertex - 'A'] = distance[current->idVertex - 'A'] + 1;
-                previous[nextVertex->idVertex - 'A'] = current->idVertex;
-
-                queue[rear++] = nextVertex;
-
-                if (nextVertex->idVertex == endVertexID) {
-                    // Rekonstruksi jalur
-                    string path = "";
-                    Vertex* pathVertex = endVertex;
-
-                    while (pathVertex != nullptr) {
-                        path = pathVertex->idVertex + path;
-                        pathVertex = findVertex(G, previous[pathVertex->idVertex - 'A']);
+            // Menemukan indeks vertex tujuan dari edge yang sedang diproses
+            for (int i = 0; i < vertexCount; i++) {
+                if (vertices[i] == edge->destVertexID) {
+                    int newDist = distances[minIndex] + edge->weight;
+                    if (distances[i] == -1 || newDist < distances[i]) {
+                        distances[i] = newDist;
+                        predecessors[i] = vertices[minIndex];
                     }
-                    cout << "Rute tercepat: " << path << endl;
-                    cout << "Jumlah langkah: " << distance[endVertexID - 'A'] << endl;
-                    return;
                 }
             }
             edge = edge->nextEdge;
         }
     }
 
-    cout << "Tidak ada jalur ditemukan antara " << startVertexID << " dan " << endVertexID << endl;
-}
-
-// DFS untuk mencari jalur terlama
-void dfs(Vertex* current, char endVertexID, int currentWeight, int &maxWeight, bool visited[], bool &foundLongest, Graph G, string path) {
-    if (idVertex(current) == endVertexID) {
-        if (!foundLongest || currentWeight > maxWeight) {
-            maxWeight = currentWeight;
-            path += current->idVertex; // Menambahkan vertex tujuan ke jalur
-            cout << "Rute terlama: " << path << endl;
-            foundLongest = true;
+    // Menyusun hasil akhir untuk titik tujuan
+    int endIndex = -1;
+    for (int i = 0; i < vertexCount; i++) {
+        if (vertices[i] == endVertexID) {
+            endIndex = i;
+            break;
         }
-        return;
     }
 
-    visited[current->idVertex - 'A'] = true;
-    path += current->idVertex; // Menambahkan vertex ke jalur
-
-    Edge* edge = firstEdge(current);
-    while (edge != nullptr) {
-        Vertex* nextVertex = findVertex(G, edge->destVertexID);
-        if (nextVertex != nullptr && !visited[nextVertex->idVertex - 'A']) {
-            dfs(nextVertex, endVertexID, currentWeight + edge->weight, maxWeight, visited, foundLongest, G, path);
-        }
-        edge = edge->nextEdge;
-    }
-
-    visited[current->idVertex - 'A'] = false; // Membatalkan penandaan vertex sebagai sudah dikunjungi
-    path.pop_back(); // Menghapus vertex terakhir dari jalur
-}
-
-// Fungsi untuk mencari jalur tercepat dan terlama
-void DFS(Graph G, char startVertexID, char endVertexID, bool findFastest, bool findLongest) {
-    Vertex* startVertex = findVertex(G, startVertexID);
-    Vertex* endVertex = findVertex(G, endVertexID);
-
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Vertex tidak ditemukan!" << endl;
-        return;
-    }
-
-    // Inisialisasi array visited dan variabel untuk jalur tercepat dan terlama
-    bool visited[26] = {false};
-    int maxWeight = -1;
-    bool foundLongest = false;
-
-    string path = "";  // Inisialisasi jalur kosong
-
-    // Panggil DFS untuk jalur terlama
-    dfs(startVertex, endVertexID, 0, maxWeight, visited, foundLongest, G, path);
-
-    if (!foundLongest) {
-        cout << "Tidak ada rute terlama ditemukan antara " << startVertexID << " dan " << endVertexID << endl;
-    }
-}
-
-int totalHarga(Graph G, char startVertexID, char endVertexID) {
-    Vertex* startVertex = findVertex(G, startVertexID);
-    Vertex* endVertex = findVertex(G, endVertexID);
-
-    if (startVertex == nullptr || endVertex == nullptr) {
-        cout << "Vertex tidak ditemukan!" << endl;
-        return -1; // Mengembalikan nilai error jika vertex tidak ditemukan
-    }
-
-    bool visited[26] = {false}; // Mengasumsikan hanya menggunakan huruf besar A-Z
-    int totalWeight = -1; // Untuk menyimpan total bobot dari jalur yang ditemukan
-
-    // Fungsi DFS untuk menghitung total bobot
-    dfsTotalHarga(startVertex, endVertexID, 0, visited, totalWeight, G);
-
-    return totalWeight;
-}
-
-// Fungsi DFS untuk menghitung total bobot dari jalur yang ditemukan
-void dfsTotalHarga(Vertex* current, char endVertexID, int currentWeight, bool visited[], int &totalWeight, Graph G) {
-    if (idVertex(current) == endVertexID) {
-        totalWeight = currentWeight;  // Menyimpan bobot jalur yang ditemukan
-        return;
-    }
-
-    visited[current->idVertex - 'A'] = true;
-
-    Edge* edge = firstEdge(current);
-    while (edge != nullptr) {
-        Vertex* nextVertex = findVertex(G, edge->destVertexID);
-        if (nextVertex != nullptr && !visited[nextVertex->idVertex - 'A']) {
-            dfsTotalHarga(nextVertex, endVertexID, currentWeight + edge->weight, visited, totalWeight, G);
-            // Jika jalur ditemukan, berhenti
-            if (totalWeight != -1) {
-                return;
+    if (endIndex == -1 || distances[endIndex] == -1) {
+        cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
+    } else {
+        cout << "Waktu Tempuh: " << distances[endIndex] << " Menit" << endl;
+        string path = endVertexID;
+        while (predecessors[endIndex] != "") {
+            path = predecessors[endIndex] + " -> " + path;
+            for (int i = 0; i < vertexCount; i++) {
+                if (vertices[i] == predecessors[endIndex]) {
+                    endIndex = i;
+                    break;
+                }
             }
         }
-        edge = edge->nextEdge;
+        cout << "Jalur: " << path << endl;
     }
-
-    visited[current->idVertex - 'A'] = false; // Membatalkan penandaan vertex sebagai sudah dikunjungi
 }
 
 
-// Menampilkan menu
+int totalHarga(Graph G, string startVertexID, string endVertexID) {
+    const int MAX_VERTEX = 100;
+    string vertices[MAX_VERTEX];
+    int distances[MAX_VERTEX];
+    string predecessors[MAX_VERTEX];
+    bool visited[MAX_VERTEX] = {false};
+    int vertexCount = 0;
+
+    adrVertex v = G.firstVertex;
+    while (v != nullptr) {
+        vertices[vertexCount] = v->idVertex;
+        distances[vertexCount] = -1; // Inisialisasi jarak
+        predecessors[vertexCount] = "";
+        vertexCount++;
+        v = v->nextVertex;
+    }
+
+    // Temukan indeks titik awal (startVertexID)
+    int startIndex = -1;
+    for (int i = 0; i < vertexCount; i++) {
+        if (vertices[i] == startVertexID) {
+            startIndex = i;
+            break;
+        }
+    }
+
+    if (startIndex == -1) {
+        cout << "Titik awal tidak ditemukan" << endl;
+        return -1;  // Jika titik awal tidak ditemukan
+    }
+
+    distances[startIndex] = 0; // Set jarak awal ke 0 untuk titik awal
+
+    // Algoritma Dijkstra
+    for (int count = 0; count < vertexCount; count++) {
+        int minIndex = -1;
+        for (int i = 0; i < vertexCount; i++) {
+            if (!visited[i] && distances[i] != -1 &&
+                (minIndex == -1 || distances[i] < distances[minIndex])) {
+                minIndex = i;
+            }
+        }
+
+        if (minIndex == -1) break; // Tidak ada jalur lagi
+        visited[minIndex] = true;
+
+        adrVertex current = findVertex(G, vertices[minIndex]);
+        adrEdge edge = current->firstEdge;
+        while (edge != nullptr) {
+            for (int i = 0; i < vertexCount; i++) {
+                if (vertices[i] == edge->destVertexID) {
+                    int newDist = distances[minIndex] + edge->weight;
+                    if (distances[i] == -1 || newDist < distances[i]) {
+                        distances[i] = newDist;
+                        predecessors[i] = vertices[minIndex];
+                    }
+                }
+            }
+            edge = edge->nextEdge;
+        }
+    }
+
+    // Menentukan index vertex tujuan (endVertexID)
+    int endIndex = -1;
+    for (int i = 0; i < vertexCount; i++) {
+        if (vertices[i] == endVertexID) {
+            endIndex = i;
+            break;
+        }
+    }
+
+    // Cek apakah ada jalur ke vertex tujuan
+    if (endIndex != -1 && distances[endIndex] != -1) {
+        return distances[endIndex] * 1000;  // Kembalikan total harga
+    } else {
+        cout << "Tidak ada jalur ke " << endVertexID << endl;
+        return -1;  // Tidak ada jalur atau vertex tujuan tidak ditemukan
+    }
+}
+
+
+void tambahRute(Graph &G) {
+    string newVertexID, connectedVertexID;
+    int weight;
+
+    // vertex baru
+    cout << "Masukkan Gedung baru: ";
+    cin >> newVertexID;
+
+    // Periksa apakah vertex sudah ada
+    adrVertex existingVertex = findVertex(G, newVertexID);
+    if (existingVertex != nullptr) {
+        cout << "Gedung " << newVertexID << " sudah ada.\n";
+        return;  // Jika sudah ada, tidak lanjutkan menambahkan vertex baru
+    }
+
+    // Tambahkan vertex baru ke dalam graph
+    addVertex(G, newVertexID);
+    cout << "Gedung " << newVertexID << " telah ditambahkan." << endl;
+
+    // pilihan apakah ingin menyambungkan vertex baru ke vertex lain
+    cout << "Apakah Anda ingin menyambungkan gedung baru ke gedung lain?: ";
+    string choice;
+    cin >> choice;
+
+    if (choice == "ya") {
+        cout << "Masukkan ID gedung yang akan disambungkan ke " << newVertexID << ": ";
+        cin >> connectedVertexID;
+
+        // cek apakah vertex yang ingin disambungkan ada
+        adrVertex connectedVertex = findVertex(G, connectedVertexID);
+        if (connectedVertex != nullptr) {
+            // Masukkan edge yang menghubungkan kedua vertex
+            cout << "Masukkan berat (biaya) edge yang menghubungkan "
+                 << newVertexID << " ke " << connectedVertexID << ": ";
+            cin >> weight;
+
+            // Tambahkan edge yang menghubungkan kedua vertex
+            addEdge(G, newVertexID, connectedVertexID, weight);
+            cout << "Edge antara " << newVertexID << " dan " << connectedVertexID
+                 << " dengan biaya " << weight << " telah ditambahkan." << endl;
+        } else {
+            cout << "Gedung tujuan tidak ditemukan.\n";
+        }
+    } else if (choice == "nanti"){
+        // Jika tidak menambahkan edge, beri pilihan untuk menambahkannya nanti
+        cout << "Anda telah menambahkan Gedung " << newVertexID << " tanpa menyambungkannya.\n";
+        cout << "Anda dapat menambahkan sambungan (edge) di menu berikutnya.\n";
+    }else{
+        cout << "Anda tidak memasukkan pilihan dengan benar";
+        return;
+    }
+}
+
+void tujuan(Graph &G, string &startVertex, string &endVertex) {
+    cout << "\nMasukkan posisi awal (misal: Gedung_A): ";
+    cin >> startVertex;
+    cout << "Masukkan posisi tujuan (misal: Gedung_B): ";
+    cin >> endVertex;
+    
+    // kondisi jika titik awal dan titik tujuan sama
+    if (startVertex == endVertex) {
+        cout << "Titik awal dan titik tujuan sama. Silakan masukkan gedung yang berbeda.\n";
+        return; // Menghentikan proses jika titik awal dan tujuan sama
+    }
+    
+    // kondisi jika vertex awal dan tujuan ada di graph
+    adrVertex startVertexFound = findVertex(G, startVertex);
+    adrVertex endVertexFound = findVertex(G, endVertex);
+    
+    if (startVertexFound == nullptr || endVertexFound == nullptr) {
+        cout << "Tidak ada gedung tersebut dalam map.\n";
+        return; // Menghentikan proses jika salah satu atau keduanya tidak ditemukan
+    }
+    
+    // kondisi apakah ada jalur yang menghubungkan startVertex dan endVertex
+    adrEdge edge = startVertexFound->firstEdge;
+    bool edgeExists = false;
+    while (edge != nullptr) {
+        if (edge->destVertexID == endVertex) {
+            edgeExists = true; // Jika ditemukan edge yang menghubungkan
+            break;
+        }
+        edge = edge->nextEdge;
+    }
+    
+        cout << "Titik awal dan titik tujuan telah diterima: " << startVertex << " ke " << endVertex << endl;
+
+}
+
 void tampilkanMenu(Graph &G) {
-    char startVertex, endVertex;
+    string startVertex, endVertex;
     bool jalan = true;
+    
     while (jalan) {
-        cout << "-------- Menu --------" << endl;
+        cout << "-------- SELAMAT DATANG DI BEAM --------" << endl;
         cout << "1. Lihat Map" << endl;
         cout << "2. Masukkan Titik Awal dan Tujuan" << endl;
-        cout << "3. Tampilkan Rute Tercepat dan Terlama" << endl;
-        cout << "4. Hitung Total Harga" << endl;
-        cout << "5. Hapus Jalur" << endl;
-        cout << "6. Rute Terjauh" << endl;
-        cout << "7. Keluar" << endl;
-        cout << "Masukkan menu: ";
+        cout << "3. Tampilkan Rute Tercepat" << endl;
+        cout << "4. Tampilkan Harga" << endl;
+        cout << "5. Tutpu Jalur" << endl;
+        cout << "6. Tambah Gedung & Sambungkan Rute" << endl;
+        cout << "7. Sambungkan Gedung yang Sudah Ada" << endl;  // Opsi baru
+        cout << "8. Keluar" << endl;
+        cout << "Masukkan pilihan: ";
 
         int pilihan;
         cin >> pilihan;
 
         switch (pilihan) {
             case 1:
+                cout << "\nMenampilkan peta koneksi antar gedung:\n";
                 printGraph(G);
                 break;
 
             case 2:
-                cout << "Masukkan titik awal: ";
-                cin >> startVertex;
-                cout << "Masukkan titik tujuan: ";
-                cin >> endVertex;
+                tujuan(G, startVertex, endVertex); // Panggil fungsi untuk input titik awal dan tujuan
                 break;
 
             case 3:
-                DFS(G, startVertex, endVertex, true, true);  // Tampilkan rute tercepat dan terlama
+                if (!startVertex.empty() && !endVertex.empty()) {
+                    cout << "\nMenampilkan rute tercepat dari " << startVertex << " ke " << endVertex << ":\n";
+                    ruteTerecepat(G, startVertex, endVertex); // Menampilkan rute tercepat
+                } else {
+                    cout << "\nSilakan masukkan titik awal dan tujuan terlebih dahulu.\n";
+                }
                 break;
 
             case 4:
-                cout << "Total harga: " << totalHarga(G, startVertex, endVertex) << endl;
+                if (!startVertex.empty() && !endVertex.empty()) {
+                    cout << "\nMenampilkan biaya total perjalanan:\n";
+                    int harga = totalHarga(G, startVertex, endVertex); // Menampilkan biaya total
+                    if (harga != -1) {
+                        cout << "Estimasi Harga perjalanan dari " << startVertex
+                             << " ke " << endVertex << ": Rp " << harga << endl;
+                    } else {
+                        cout << "Tidak dapat menghitung harga\n";
+                    }
+                } else {
+                    cout << "\nSilakan masukkan titik awal dan tujuan terlebih dahulu.\n";
+                }
                 break;
 
-            case 5:
-                removeEdge(G, startVertex, endVertex);
+            case 5: {
+                string fromID, toID;
+                cout << "\nMasukkan titik awal jalur yang akan dihapus: ";
+                cin >> fromID;
+                cout << "Masukkan titik tujuan jalur yang akan dihapus: ";
+                cin >> toID;
+                removeEdge(G, fromID, toID);
                 break;
+            }
 
             case 6:
-                // Tampilkan rute terjauh (bisa diimplementasikan dengan logika DFS khusus)
+                tambahRute(G);  // Fungsi untuk menambah gedung dan rute
                 break;
 
-            case 7:
+            case 7: {
+                string newVertexID, connectedVertexID;
+                int weight;
+
+                cout << "Masukkan Gedung yang ingin disambungkan: ";
+                cin >> newVertexID;
+
+                // Cek apakah gedung ada di graph
+                adrVertex existingVertex = findVertex(G, newVertexID);
+                if (existingVertex == nullptr) {
+                    cout << "Gedung " << newVertexID << " tidak ditemukan.\n";
+                } else {
+                    // Masukkan vertex yang akan disambungkan
+                    cout << "Masukkan ID gedung yang akan disambungkan ke " << newVertexID << ": ";
+                    cin >> connectedVertexID;
+
+                    adrVertex connectedVertex = findVertex(G, connectedVertexID);
+                    if (connectedVertex != nullptr) {
+                        cout << "Masukkan biaya (berat) edge: ";
+                        cin >> weight;
+                        while (weight < 0) {
+                            cin >> weight;
+                        }
+
+                        // Tambahkan edge
+                        addEdge(G, newVertexID, connectedVertexID, weight);
+                        cout << "Edge antara " << newVertexID << " dan " << connectedVertexID << " telah ditambahkan.\n";
+                    } else {
+                        cout << "Gedung tujuan tidak ditemukan.\n";
+                    }
+                }
+                break;
+            }
+
+            case 8:
+                cout << "\nKeluar dari program. Terima kasih telah menggunakan program ini!\n";
                 jalan = false;
                 break;
 
             default:
-                cout << "Pilihan tidak valid!" << endl;
+                cout << "\nPilihan tidak valid. Silakan coba lagi.\n";
                 break;
         }
+        cout << endl;
     }
 }
