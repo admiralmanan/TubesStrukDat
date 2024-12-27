@@ -432,7 +432,7 @@ void tampilkanMenu(Graph &G) {
 
                     adrVertex connectedVertex = findVertex(G, connectedVertexID);
                     if (connectedVertex != nullptr) {
-                        cout << "Masukkan biaya (berat) edge: ";
+                        cout << "Masukkan waktu tempuh: ";
                         cin >> weight;
 
                         // Tambahkan edge
