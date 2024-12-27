@@ -1,5 +1,3 @@
-#include "tGraph.h"
-
 void initGraph(Graph &G) {
     G.firstVertex = nullptr;
 }
@@ -37,7 +35,6 @@ void addEdge(Graph &G, string fromID, string toID, int weight) {
     adrVertex toVertex = findVertex(G, toID);
 
     if (fromVertex != nullptr && toVertex != nullptr) {
-        
         adrEdge newEdge = new Edge;
         newEdge->destVertexID = toID;
         newEdge->weight = weight;
@@ -56,83 +53,59 @@ void removeEdge(Graph &G, string fromVertexID, string toVertexID) {
     adrVertex fromVertex = findVertex(G, fromVertexID);
     adrVertex toVertex = findVertex(G, toVertexID);
 
-    if (fromVertex == nullptr || toVertex == nullptr) {
-        // Jika salah satu vertex tidak ditemukan, tampilkan pesan yang sesuai
-        cout << "Tidak ada rute dari Gedung " << fromVertexID << " ke Gedung " << toVertexID << endl;
-        return;  // Hentikan eksekusi fungsi
-    }
-
-    // Cek apakah ada edge yang menghubungkan fromVertex ke toVertex
-    adrEdge edge = fromVertex->firstEdge;
-    bool foundEdge = false;  // Flag untuk mengecek apakah edge ditemukan
-    adrEdge prev = nullptr;
-
-    while (edge != nullptr) {
-        if (edge->destVertexID == toVertexID) {
-            foundEdge = true;  // Tandai bahwa edge ditemukan
-            if (prev == nullptr) {
-                fromVertex->firstEdge = edge->nextEdge;  // Hapus edge pertama
-            } else {
-                prev->nextEdge = edge->nextEdge;  // Hapus edge setelahnya
+    if (fromVertex != nullptr && toVertex != nullptr) {
+        // Hapus edge dari fromVertex ke toVertex
+        adrEdge edge = fromVertex->firstEdge;
+        adrEdge prev = nullptr;
+        while (edge != nullptr) {
+            if (edge->destVertexID == toVertexID) {
+                if (prev == nullptr) {
+                    fromVertex->firstEdge = edge->nextEdge;
+                } else {
+                    prev->nextEdge = edge->nextEdge;
+                }
+                delete edge;
+                cout << "Edge dari " << fromVertexID << " ke " << toVertexID << " telah dihapus." << endl;
+                break;
             }
-            delete edge;
-            break;
+            prev = edge;
+            edge = edge->nextEdge;
         }
-        prev = edge;
-        edge = edge->nextEdge;
-    }
 
-    // Jika tidak ada edge yang ditemukan, tampilkan pesan bahwa tidak ada rute
-    if (!foundEdge) {
-        cout << "Tidak ada rute dari Gedung " << fromVertexID << " ke Gedung " << toVertexID << endl;
-        return;  // Hentikan eksekusi fungsi
-    }
-
-    // Jika Anda ingin menghapus juga edge sebaliknya (untuk graf tidak berarah)
-    edge = toVertex->firstEdge;
-    prev = nullptr;
-    while (edge != nullptr) {
-        if (edge->destVertexID == fromVertexID) {
-            if (prev == nullptr) {
-                toVertex->firstEdge = edge->nextEdge;  // Hapus edge pertama
-            } else {
-                prev->nextEdge = edge->nextEdge;  // Hapus edge setelahnya
+        // Jika Anda ingin menghapus juga edge sebaliknya (untuk graf tidak berarah)
+        edge = toVertex->firstEdge;
+        prev = nullptr;
+        while (edge != nullptr) {
+            if (edge->destVertexID == fromVertexID) {
+                if (prev == nullptr) {
+                    toVertex->firstEdge = edge->nextEdge;
+                } else {
+                    prev->nextEdge = edge->nextEdge;
+                }
+                delete edge;
+                cout << "Edge dari " << toVertexID << " ke " << fromVertexID << " telah dihapus." << endl;
+                break;
             }
-            delete edge;
-            break;
+            prev = edge;
+            edge = edge->nextEdge;
         }
-        prev = edge;
-        edge = edge->nextEdge;
     }
-
-    cout << "Rute antara " << fromVertexID << " dan " << toVertexID << " telah dihapus." << endl;
 }
-
-
 
 
 void printGraph(Graph G) {
     adrVertex temp = G.firstVertex;
     while (temp != nullptr) {
-        cout << temp->idVertex << ": ";
-        
-        bool firstEdge = true;
-
+        cout << "Vertex " << temp->idVertex << ": ";
         adrEdge edge = temp->firstEdge;
         while (edge != nullptr) {
-            // Cek apakah ini edge pertama yang akan dicetak, agar formatnya sesuai
-            if (!firstEdge) {
-                cout << ", ";
-            }
-            cout << edge->destVertexID << " | Waktu: " << edge->weight << " Menit";
-            firstEdge = false;
+            cout << "-> " << edge->destVertexID << "(" << edge->weight << ") ";
             edge = edge->nextEdge;
         }
         cout << endl;
         temp = temp->nextVertex;
     }
 }
-
 
 void ruteTerecepat(Graph G, string startVertexID, string endVertexID) {
     if (startVertexID == endVertexID) {
@@ -217,7 +190,7 @@ void ruteTerecepat(Graph G, string startVertexID, string endVertexID) {
     if (endIndex == -1 || distances[endIndex] == -1) {
         cout << "Tidak ada jalur dari " << startVertexID << " ke " << endVertexID << endl;
     } else {
-        cout << "Waktu Tempuh: " << distances[endIndex] << " Menit" << endl;
+        cout << "Jarak terpendek: " << distances[endIndex] << endl;
         string path = endVertexID;
         while (predecessors[endIndex] != "") {
             path = predecessors[endIndex] + " -> " + path;
@@ -234,11 +207,11 @@ void ruteTerecepat(Graph G, string startVertexID, string endVertexID) {
 
 
 int totalHarga(Graph G, string startVertexID, string endVertexID) {
-    const int MAX_VERTEX = 100;
-    string vertices[MAX_VERTEX];
-    int distances[MAX_VERTEX];
-    string predecessors[MAX_VERTEX];
-    bool visited[MAX_VERTEX] = {false};
+    const int MAX_VARTEX = 100;
+    string vertices[MAX_VARTEX];
+    int distances[MAX_VARTEX];
+    string predecessors[MAX_VARTEX];
+    bool visited[MAX_VARTEX] = {false};
     int vertexCount = 0;
 
     adrVertex v = G.firstVertex;
@@ -250,23 +223,7 @@ int totalHarga(Graph G, string startVertexID, string endVertexID) {
         v = v->nextVertex;
     }
 
-    // Temukan indeks titik awal (startVertexID)
-    int startIndex = -1;
-    for (int i = 0; i < vertexCount; i++) {
-        if (vertices[i] == startVertexID) {
-            startIndex = i;
-            break;
-        }
-    }
-
-    if (startIndex == -1) {
-        cout << "Titik awal tidak ditemukan" << endl;
-        return -1;  // Jika titik awal tidak ditemukan
-    }
-
-    distances[startIndex] = 0; // Set jarak awal ke 0 untuk titik awal
-
-    // Algoritma Dijkstra
+    distances[0] = 0; // Set jarak awal
     for (int count = 0; count < vertexCount; count++) {
         int minIndex = -1;
         for (int i = 0; i < vertexCount; i++) {
@@ -295,7 +252,7 @@ int totalHarga(Graph G, string startVertexID, string endVertexID) {
         }
     }
 
-    // Menentukan index vertex tujuan (endVertexID)
+    // Menentukan index vertex tujuan
     int endIndex = -1;
     for (int i = 0; i < vertexCount; i++) {
         if (vertices[i] == endVertexID) {
@@ -306,13 +263,11 @@ int totalHarga(Graph G, string startVertexID, string endVertexID) {
 
     // Cek apakah ada jalur ke vertex tujuan
     if (endIndex != -1 && distances[endIndex] != -1) {
-        return distances[endIndex] * 1000;  // Kembalikan total harga
+        return distances[endIndex];
     } else {
-        cout << "Tidak ada jalur ke " << endVertexID << endl;
         return -1;  // Tidak ada jalur atau vertex tujuan tidak ditemukan
     }
 }
-
 
 void tambahRute(Graph &G) {
     string newVertexID, connectedVertexID;
@@ -334,7 +289,7 @@ void tambahRute(Graph &G) {
     cout << "Gedung " << newVertexID << " telah ditambahkan." << endl;
 
     // pilihan apakah ingin menyambungkan vertex baru ke vertex lain
-    cout << "Apakah Anda ingin menyambungkan gedung baru ke gedung lain?: ";
+    cout << "Apakah Anda ingin menyambungkan gedung baru ke gedung lain? ( ya / nanti ): ";
     string choice;
     cin >> choice;
 
@@ -372,48 +327,36 @@ void tujuan(Graph &G, string &startVertex, string &endVertex) {
     cin >> startVertex;
     cout << "Masukkan posisi tujuan (misal: Gedung_B): ";
     cin >> endVertex;
-    
-    // kondisi jika titik awal dan titik tujuan sama
+
+    // Cek jika titik awal dan titik tujuan sama
     if (startVertex == endVertex) {
         cout << "Titik awal dan titik tujuan sama. Silakan masukkan gedung yang berbeda.\n";
         return; // Menghentikan proses jika titik awal dan tujuan sama
     }
-    
-    // kondisi jika vertex awal dan tujuan ada di graph
+
+    // Cek jika vertex awal dan tujuan ada di graph
     adrVertex startVertexFound = findVertex(G, startVertex);
     adrVertex endVertexFound = findVertex(G, endVertex);
-    
+
     if (startVertexFound == nullptr || endVertexFound == nullptr) {
-        cout << "Tidak ada gedung tersebut dalam map.\n";
+        cout << "Tidak ada gedung tersebut dalam graph.\n";
         return; // Menghentikan proses jika salah satu atau keduanya tidak ditemukan
     }
-    
-    // kondisi apakah ada jalur yang menghubungkan startVertex dan endVertex
-    adrEdge edge = startVertexFound->firstEdge;
-    bool edgeExists = false;
-    while (edge != nullptr) {
-        if (edge->destVertexID == endVertex) {
-            edgeExists = true; // Jika ditemukan edge yang menghubungkan
-            break;
-        }
-        edge = edge->nextEdge;
-    }
-    
-        cout << "Titik awal dan titik tujuan telah diterima: " << startVertex << " ke " << endVertex << endl;
 
+    cout << "Titik awal dan titik tujuan telah diterima: " << startVertex << " ke " << endVertex << endl;
 }
 
 void tampilkanMenu(Graph &G) {
     string startVertex, endVertex;
     bool jalan = true;
-    
+
     while (jalan) {
-        cout << "-------- SELAMAT DATANG DI BEAM --------" << endl;
+        cout << "-------- Menu --------" << endl;
         cout << "1. Lihat Map" << endl;
         cout << "2. Masukkan Titik Awal dan Tujuan" << endl;
         cout << "3. Tampilkan Rute Tercepat" << endl;
         cout << "4. Tampilkan Harga" << endl;
-        cout << "5. Tutpu Jalur" << endl;
+        cout << "5. Hapus Jalur" << endl;
         cout << "6. Tambah Gedung & Sambungkan Rute" << endl;
         cout << "7. Sambungkan Gedung yang Sudah Ada" << endl;  // Opsi baru
         cout << "8. Keluar" << endl;
@@ -446,10 +389,10 @@ void tampilkanMenu(Graph &G) {
                     cout << "\nMenampilkan biaya total perjalanan:\n";
                     int harga = totalHarga(G, startVertex, endVertex); // Menampilkan biaya total
                     if (harga != -1) {
-                        cout << "Estimasi Harga perjalanan dari " << startVertex
-                             << " ke " << endVertex << ": Rp " << harga << endl;
+                        cout << "Biaya total perjalanan dari " << startVertex
+                             << " ke " << endVertex << ": Rp " << harga * 1000 << endl;
                     } else {
-                        cout << "Tidak dapat menghitung harga\n";
+                        cout << "Tidak dapat menghitung harga. Cek kembali koneksi antar gedung.\n";
                     }
                 } else {
                     cout << "\nSilakan masukkan titik awal dan tujuan terlebih dahulu.\n";
@@ -463,6 +406,7 @@ void tampilkanMenu(Graph &G) {
                 cout << "Masukkan titik tujuan jalur yang akan dihapus: ";
                 cin >> toID;
                 removeEdge(G, fromID, toID);
+                cout << "Jalur dari " << fromID << " ke " << toID << " telah dihapus.\n";
                 break;
             }
 
@@ -490,9 +434,6 @@ void tampilkanMenu(Graph &G) {
                     if (connectedVertex != nullptr) {
                         cout << "Masukkan biaya (berat) edge: ";
                         cin >> weight;
-                        while (weight < 0) {
-                            cin >> weight;
-                        }
 
                         // Tambahkan edge
                         addEdge(G, newVertexID, connectedVertexID, weight);
@@ -513,6 +454,6 @@ void tampilkanMenu(Graph &G) {
                 cout << "\nPilihan tidak valid. Silakan coba lagi.\n";
                 break;
         }
-        cout << endl;
+        cout <<endl;
     }
 }
