@@ -34,6 +34,8 @@ struct Graph {
 };
 
 // Deklarasi fungsi dan prosedur
+void createVertex(string newVertexID, adrVertex &v);
+void initGraph(Graph &G);
 void addVertex(Graph &G, string newVertexID);
 adrVertex findVertex(Graph G, string id);
 void addEdge(Graph &G, string fromID, string toID, int weight);
